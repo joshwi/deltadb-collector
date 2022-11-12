@@ -1,0 +1,5 @@
+[
+    "MATCH (n:nfl_games),(m:nfl_games) WHERE n.year=m.year AND n.week=m.week AND n.team=m.opp AND n.opp=m.team AND (n.location='' OR n.location='N') MERGE(:games{ label:n.year+'_'+n.week+'_'+n.tag+'_'+m.tag,date: n.date,week: n.week,day: n.day,year: n.year,overtime: n.overtime,game_code: n.game_code,home_tag: n.tag,away_tag: m.tag,home_team: n.team,away_team: m.team,home_record: n.record,away_record: m.record,home_result: n.result,away_result: m.result,home_score: n.pts_off,away_score: m.pts_off,home_yds: n.yards_off,away_yds: m.yards_off,home_rush_yds: n.rush_yds_off,away_rush_yds: m.rush_yds_off,home_pass_yds: n.pass_yds_off,away_pass_yds: m.pass_yds_off,home_first_downs: n.first_down_off,away_first_downs: m.first_down_off,home_to: n.to_off,away_to: m.to_off})",
+    "MATCH (a:games) WHERE a.week='SuperBowl' AND a.home_result='L' DELETE a",
+    "MATCH (n:nfl_games) DELETE n"
+]

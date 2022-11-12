@@ -1,0 +1,1 @@
+0 9 * * TUE sh /deltadb/scripts/collect.sh 
