@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -14,22 +15,23 @@ import (
 
 var (
 	// Pull in env variables: USERNAME, PASSWORD, uri
-	LOGFILE  = os.Getenv("LOGFILE")
-	USERNAME = os.Getenv("NEO4J_USERNAME")
-	PASSWORD = os.Getenv("NEO4J_PASSWORD")
-	HOST     = os.Getenv("NEO4J_HOST")
-	PORT     = os.Getenv("NEO4J_PORT")
-	filepath string
+	USERNAME  = os.Getenv("NEO4J_USERNAME")
+	PASSWORD  = os.Getenv("NEO4J_PASSWORD")
+	HOST      = os.Getenv("NEO4J_HOST")
+	PORT      = os.Getenv("NEO4J_PORT")
+	BASE_PATH = os.Getenv("BASE_PATH")
+	file      string
 )
 
 func init() {
 
 	// Define flag arguments for the application
-	flag.StringVar(&filepath, `file`, ``, `Filename for DB transactions. Default: <empty>`)
+	flag.StringVar(&file, `file`, ``, `Filename for DB transactions. Default: <empty>`)
 	flag.Parse()
 
-	// Initialize logfile at user given path. Default: ./collection.log
-	logger.InitLog(LOGFILE)
+	// Initialize logfile at user given path.
+	logfile := fmt.Sprintf("%v/run.log", BASE_PATH)
+	logger.InitLog(logfile)
 
 	logger.Logger.Info().Str("status", "start").Msg("TRANSACTIONS")
 
@@ -37,15 +39,19 @@ func init() {
 
 func main() {
 
+	filepath := fmt.Sprintf("%v/%v", BASE_PATH, file)
+	fileBytes, err := utils.Read(filepath)
+	if err != nil {
+		log.Fatal("No such file or directory!")
+	}
+
+	var commands []string
+	json.Unmarshal(fileBytes, &commands)
+
 	uri := "bolt://" + HOST + ":" + PORT
 	driver := db.Connect(uri, USERNAME, PASSWORD)
 	sessionConfig := neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite}
 	session := driver.NewSession(sessionConfig)
-
-	fileBytes, _ := utils.Read(filepath)
-
-	var commands []string
-	json.Unmarshal(fileBytes, &commands)
 
 	if len(commands) > 0 {
 		err := db.RunTransactions(session, commands)
