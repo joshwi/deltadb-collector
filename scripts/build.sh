@@ -1,3 +1,4 @@
+#!/bin/sh
 DIR="./app/builds"
 if [ ! -d "$DIR" ]; then
    echo "Creating directory: $DIR"

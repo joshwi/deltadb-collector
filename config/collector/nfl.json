@@ -611,5 +611,27 @@
                 ]
             }
         ]
+    },
+    "cap": {
+        "id": {
+            "name": "cap",
+            "value": "cap"
+        },
+        "sources": [
+            "https://www.spotrac.com/nfl/{tag}/cap/{year}"
+        ],
+        "parser": [
+            {
+                "name": "hit",
+                "match": [
+                    {
+                        "name": "(?ms)<div class=\"teams\">.*?<\\/table>"
+                    },
+                    {
+                        "name": "(?ms)<tr[^>]+>.*?<a href=\"https:\/\/www\\.spotrac\\.com\/redirect\/player\/(?P<player_code>(\\d+))\/\">(?P<player>(.*?))<\/a>.*?<span[^>]+>(?P<position>(.*?))<\/span>.*?<span[^>]+>(?P<base_salary>(.*?))<\/span>.*?<span[^>]+title=\"Signing Bonus\">(?P<signing_bonus>(.*?))<\/span>.*?<span[^>]+title=\"Roster Bonus\">(?P<roster_bonus>(.*?))<\/span>.*?<span[^>]+title=\"Option Bonus\">(?P<option_bonus>(.*?))<\/span>.*?<span[^>]+title=\"Workout Bonus\">(?P<workout_bonus>(.*?))<\/span>.*?<span[^>]+title=\"Restructure Bonus\">(?P<restructure_bonus>(.*?))<\/span>.*?<span[^>]+>(?P<misc_bonus>(.*?))<\/span>.*?<span[^>]+>(?P<dead_cap>(.*?))<\/span>.*?<span[^>]+>(?P<cap_hit>(.*?))<\/span>.*?<td[^>]+>(?P<cap_perc>(\\d+.\\d+))<\/td>.*?<\/tr>"
+                    }
+                ]
+            }
+        ]
     }
 }
