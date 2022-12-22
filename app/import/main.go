@@ -1,11 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/joshwi/go-pkg/logger"
 	"github.com/joshwi/go-pkg/utils"
@@ -21,13 +22,13 @@ var (
 	PORT      = os.Getenv("NEO4J_PORT")
 	REPO_PATH = os.Getenv("REPO_PATH")
 	LOG_FILE  = os.Getenv("LOG_FILE")
-	file      string
+	path      string
 )
 
 func init() {
 
 	// Define flag arguments for the application
-	flag.StringVar(&file, `file`, ``, `Filename for DB transactions. Default: <empty>`)
+	flag.StringVar(&path, `filepath`, ``, `Filepath for CSV file. Default: <empty>`)
 	flag.Parse()
 
 	// Initialize logfile at user given path.
@@ -39,14 +40,22 @@ func init() {
 
 func main() {
 
-	filepath := fmt.Sprintf("%v/%v", REPO_PATH, file)
-	fileBytes, err := utils.Read(filepath)
+	commands := []string{}
+
+	newpath := fmt.Sprintf("%v/%v", REPO_PATH, path)
+	files, err := utils.Scan(newpath)
 	if err != nil {
-		log.Fatal("No such file or directory!")
+		log.Println(err)
 	}
 
-	var commands []string
-	json.Unmarshal(fileBytes, &commands)
+	for _, entry := range files {
+		base := filepath.Base(entry)
+		name := strings.TrimSuffix(base, filepath.Ext(base))
+		if len(name) > 0 {
+			command := fmt.Sprintf("LOAD CSV WITH HEADERS FROM 'file:////%v/%v.csv' as row MERGE (n:%v {label: row.label}) SET n += row", path, name, name)
+			commands = append(commands, command)
+		}
+	}
 
 	uri := "bolt://" + HOST + ":" + PORT
 	driver := db.Connect(uri, USERNAME, PASSWORD)

@@ -1,0 +1,3 @@
+*/10 * * * * date +"%m/%d/%Y %H:%M:%S $HOSTNAME" >> /var/tmp/logs/monitor.log
+@reboot sh /root/scripts/collect.sh -y 1990
+@reboot sleep 3600 && sh /root/scripts/collect.sh -y 1991

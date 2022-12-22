@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -13,14 +14,15 @@ import (
 
 var (
 	// Pull in env variables: USERNAME, PASSWORD, uri
-	USERNAME = os.Getenv("NEO4J_USERNAME")
-	PASSWORD = os.Getenv("NEO4J_PASSWORD")
-	HOST     = os.Getenv("NEO4J_HOST")
-	PORT     = os.Getenv("NEO4J_PORT")
-	BASE_PATH = os.Getenv("BASE_PATH")
-	path     string
-	query    string
-	nodes    string
+	USERNAME  = os.Getenv("NEO4J_USERNAME")
+	PASSWORD  = os.Getenv("NEO4J_PASSWORD")
+	HOST      = os.Getenv("NEO4J_HOST")
+	PORT      = os.Getenv("NEO4J_PORT")
+	REPO_PATH = os.Getenv("REPO_PATH")
+	LOG_FILE  = os.Getenv("LOG_FILE")
+	path      string
+	query     string
+	nodes     string
 )
 
 func init() {
@@ -32,14 +34,25 @@ func init() {
 	flag.Parse()
 
 	// Initialize logfile at user given path.
-	logfile := fmt.Sprintf("%v/run.log", BASE_PATH)
-	logger.InitLog(logfile)
+	logger.InitLog(LOG_FILE)
 
 	logger.Logger.Info().Str("status", "start").Msg("TRANSACTIONS")
 
 }
 
 func main() {
+
+	newpath := fmt.Sprintf("%v/%v", REPO_PATH, path)
+	if _, err := os.Stat(newpath); errors.Is(err, os.ErrNotExist) {
+		if err := os.MkdirAll(newpath, 0777); err != nil {
+			log.Fatal(err)
+		}
+		if err := os.Chown(newpath, 7474, 7474); err != nil {
+			log.Fatal(err)
+		}
+	} else if err != nil {
+		log.Println(err)
+	}
 
 	commands := []string{}
 
@@ -58,7 +71,7 @@ func main() {
 	for _, node := range res {
 		if len(node) > 0 {
 			name := node[0].Value
-			command := fmt.Sprintf("MATCH (n:%v) %v WITH collect(n) AS response CALL apoc.export.csv.data(response, [], '%v/%v.csv', {}) YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data RETURN file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data", name, query, path, name)
+			command := fmt.Sprintf("MATCH (n:%v) %v WITH collect(n) AS response CALL apoc.export.csv.data(response, [], '/var/lib/neo4j/import/%v/%v.csv', {}) YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data RETURN file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data", name, query, path, name)
 			commands = append(commands, command)
 		}
 	}

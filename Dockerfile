@@ -1,30 +1,23 @@
+# Pull alpine image for golang
 FROM golang:1.16-alpine
+# Enable go modules
 RUN go env -w GO111MODULE=on
+# Add git to docker image
 RUN apk add --no-cache git
-
 # Set working directory for docker image
-WORKDIR /deltadb
-
-# Copy go.mod and go.sum
-COPY go.mod .
-COPY go.sum .
-
-# Copy go code and shell scripts
-COPY app app/
-COPY scripts scripts/
-COPY config config/
-
+WORKDIR /root
+# Copy files to directory
+COPY . .
 # Install go module dependencies
 RUN go mod tidy
-
-RUN rm -rf /deltadb/app/builds
-
+# Remove any existing go binaries
+RUN rm -rf /root/app/builds
 # Run build script
 RUN sh scripts/build.sh
-
-RUN chmod 755 /deltadb/scripts/*
-RUN chmod 755 /deltadb/app/builds/*
-
-RUN /usr/bin/crontab /deltadb/config/cron.txt
-
+# Change permissions for scripts
+RUN chmod 755 /root/scripts/*
+RUN chmod 755 /root/app/builds/*
+# Load the scheduled scripts into crontab
+RUN /usr/bin/crontab /root/app/cron/cron.txt
+# Start cron
 CMD ["sh", "scripts/start.sh"]

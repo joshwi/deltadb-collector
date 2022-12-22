@@ -21,9 +21,10 @@ var (
 	PASSWORD  = os.Getenv("NEO4J_PASSWORD")
 	HOST      = os.Getenv("NEO4J_HOST")
 	PORT      = os.Getenv("NEO4J_PORT")
-	BASE_PATH = os.Getenv("BASE_PATH")
+	REPO_PATH = os.Getenv("REPO_PATH")
+	LOG_FILE  = os.Getenv("LOG_FILE")
 
-	filename string = fmt.Sprintf("%v/config/collector/nfl.json", BASE_PATH)
+	filename string = fmt.Sprintf("%v/deltadb-assets/collector/nfl.json", REPO_PATH)
 	name     string
 	query    string
 	size     int
@@ -36,12 +37,11 @@ func init() {
 	flag.StringVar(&name, `name`, ``, `Specify name of the parsing config. Default: <empty>`)
 	flag.StringVar(&query, `query`, ``, `Run query to DB for input parameters. Default: <empty>`)
 	flag.IntVar(&size, `size`, 10, `Specify size of request pool. Default: 10`)
-	flag.IntVar(&delay, `delay`, 120, `Specify delay between collection pools in seconds. Default: 120 sec`)
+	flag.IntVar(&delay, `delay`, 60, `Specify delay between collection pools in seconds. Default: 120 sec`)
 	flag.Parse()
 
 	// Initialize logfile at user given path.
-	logfile := fmt.Sprintf("%v/run.log", BASE_PATH)
-	logger.InitLog(logfile)
+	logger.InitLog(LOG_FILE)
 
 	logger.Logger.Info().Str("status", "start").Str("name", name).Str("query", query).Msg("COLLECTION")
 }
